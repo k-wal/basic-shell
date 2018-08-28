@@ -2,25 +2,135 @@
 #include<string.h>
 #include<unistd.h>
 #include<dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include<time.h>
 
-int main(int argc, char *argv[])
+//function to print ls -l and ls -la and ls -al results
+void ls_with_l(int is_a)
 {
-	//printf("THIS IS THE LS FILE\n");	
-
-	if(argc!=2)
-	{
-		printf("Error: not enough arguments for ls\n");
-	}
 	DIR *d;
 	struct dirent *dir;
-	d=opendir(argv[1]);
+	d=opendir(".");
 	if(d)
 	{
 		while((dir=readdir(d))!=NULL)
 		{
-			printf("%s\n",dir->d_name);
+			if((dir->d_name[0]=='.' && is_a==1)||(dir->d_name[0]!='.'))
+			{
+				struct stat f;
+				stat(dir->d_name,&f);
+
+				//to get the last modified time in the right format
+				time_t t = f.st_mtime;
+				struct tm lt;
+				localtime_r(&t, &lt);
+				char timbuf[80];
+				strftime(timbuf, sizeof(timbuf), "%b %d  %H:%M", &lt);
+				
+				//printing file permissions
+				printf( (S_ISDIR(f.st_mode)) ? "d" : "-");
+    			printf( (f.st_mode & S_IRUSR) ? "r" : "-");
+    			printf( (f.st_mode & S_IWUSR) ? "w" : "-");
+    			printf( (f.st_mode & S_IXUSR) ? "x" : "-");
+    			printf( (f.st_mode & S_IRGRP) ? "r" : "-");
+    			printf( (f.st_mode & S_IWGRP) ? "w" : "-");
+    			printf( (f.st_mode & S_IXGRP) ? "x" : "-");
+	    		printf( (f.st_mode & S_IROTH) ? "r" : "-");
+    			printf( (f.st_mode & S_IWOTH) ? "w" : "-");
+    			printf( (f.st_mode & S_IXOTH) ? "x" : "-");
+    			printf("\t");
+    			
+    			//printing file size
+    			printf("%ld\t",f.st_size);
+  				
+    			//printing last modified time and date
+  				printf("%s\t",timbuf);
+				
+  				//printing file/directory name
+				printf("%s\n",dir->d_name);
+			}
 		}
+		//printf("\n");
 		closedir(d);
+
 	}
-	return 0;
+	return;
+}
+
+
+//function to print ls -a and ls results
+void ls_without_l(int is_a)
+{
+	DIR *d;
+	struct dirent *dir;
+	d=opendir(".");
+	if(d)
+	{
+		while((dir=readdir(d))!=NULL)
+		{
+			if(dir->d_name[0]=='.' && is_a==1)
+				printf("%s\n",dir->d_name);
+			else if(dir->d_name[0]!='.')
+				printf("%s\n",dir->d_name);
+		}
+		//printf("\n");
+		closedir(d);
+
+	}
+	return;
+}
+
+
+//function that decides which ls function to call and finds errors(if any)
+void ls_main(char input[])
+{
+	char* saveptr;
+	char* token = strtok_r(input," ",&saveptr);
+	token = strtok_r(NULL," ",&saveptr);
+	
+	//if no arguments/flags are given
+	if(token==NULL)
+	{
+		ls_without_l(0);
+		return;
+	}
+	
+	//if flag is a
+	if(strcmp(token,"-a")==0)
+	{
+		ls_without_l(1);
+	}
+
+	//if flag is l
+	else if(strcmp(token,"-l")==0)
+	{
+		ls_with_l(0);
+	}
+
+	//if flags are al
+	else if(strcmp(token,"-al")==0)
+	{
+		ls_with_l(1);
+	}
+
+	//if flags are la
+	else if(strcmp(token,"-la")==0)
+	{
+		ls_with_l(1);
+	}
+
+	//error
+	else
+	{
+		if(token[0]=='-')
+		{
+			printf("Invalid flag : %s\n",&token[1]);
+		}
+		else
+		{
+			printf("Invalid argument : %s\n",token);
+		}
+	}
+
 }

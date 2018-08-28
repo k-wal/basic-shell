@@ -1,4 +1,4 @@
-TARGETS = main ls	
+TARGETS = main
 
 .PHONY: clean
 
