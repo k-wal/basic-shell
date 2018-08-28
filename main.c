@@ -3,6 +3,16 @@
 #include<unistd.h>
 #include "ls.c"
 
+#define RED     "\x1b[31m"
+#define GREEN   "\x1b[32m"
+#define YELLOW  "\x1b[33m"
+#define BLUE    "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN    "\x1b[36m"
+#define RESET   "\x1b[0m"
+
+
+
 //home : Home Directory
 char home[1000];
 
@@ -83,7 +93,11 @@ void find_rwd(void)
 void take_input(char input[])
 {
 	find_rwd();
-	printf("<Olivia@UBUNTU: %s> ",rwd);
+	char user[100];
+	char host[100];
+	getlogin_r(user,100);
+	gethostname(host,100);
+	printf(GREEN "%s@%s:"RESET BLUE "%s " RESET ,user,host,rwd);
 	fgets (input, 100, stdin);
 	int len = strlen(input);
 	if(len)

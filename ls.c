@@ -7,11 +7,22 @@
 #include<time.h>
 
 //function to print ls -l and ls -la and ls -al results
-void ls_with_l(int is_a)
+void ls_with_l(int is_a,char path[])
 {
 	DIR *d;
 	struct dirent *dir;
-	d=opendir(".");
+	
+	if(path==NULL)
+		d=opendir(".");
+	else
+	{
+		d=opendir(path);
+		if(d==NULL)
+		{
+			perror("Error:");
+			return;
+		}
+	}
 	if(d)
 	{
 		while((dir=readdir(d))!=NULL)
@@ -60,11 +71,21 @@ void ls_with_l(int is_a)
 
 
 //function to print ls -a and ls results
-void ls_without_l(int is_a)
+void ls_without_l(int is_a,char path[])
 {
 	DIR *d;
 	struct dirent *dir;
-	d=opendir(".");
+	if(path==NULL)
+		d=opendir(".");
+	else
+	{
+		d=opendir(path);
+		if(d==NULL)
+		{
+			perror("Error:");
+			return;
+		}
+	}
 	if(d)
 	{
 		while((dir=readdir(d))!=NULL)
@@ -92,44 +113,48 @@ void ls_main(char input[])
 	//if no arguments/flags are given
 	if(token==NULL)
 	{
-		ls_without_l(0);
+		ls_without_l(0,NULL);
 		return;
 	}
 	
 	//if flag is a
 	if(strcmp(token,"-a")==0)
 	{
-		ls_without_l(1);
+		token = strtok_r(NULL," ",&saveptr);
+		ls_without_l(1,token);
 	}
 
 	//if flag is l
 	else if(strcmp(token,"-l")==0)
 	{
-		ls_with_l(0);
+		token = strtok_r(NULL," ",&saveptr);
+		ls_with_l(0,token);
 	}
 
 	//if flags are al
 	else if(strcmp(token,"-al")==0)
 	{
-		ls_with_l(1);
+		token = strtok_r(NULL," ",&saveptr);
+		ls_with_l(1,token);
 	}
 
 	//if flags are la
 	else if(strcmp(token,"-la")==0)
 	{
-		ls_with_l(1);
+		token = strtok_r(NULL," ",&saveptr);
+		ls_with_l(1,token);
 	}
 
-	//error
 	else
 	{
+		//error : wrong flag
 		if(token[0]=='-')
 		{
 			printf("Invalid flag : %s\n",&token[1]);
 		}
 		else
 		{
-			printf("Invalid argument : %s\n",token);
+			ls_without_l(0,token);
 		}
 	}
 
