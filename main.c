@@ -6,7 +6,7 @@
 #include "system_commands.c"
 #include "remindme.c"
 #include "pinfo.c"
-
+#include "clock.c"
 
 
 #define RED     "\x1b[31m"
@@ -156,7 +156,6 @@ void change_dir(char input[])
 	else
 	{
 		getcwd(cwd,sizeof(cwd));
-		printf("directory is now: %s\n",cwd);
 	}
 	return;
 }
@@ -211,6 +210,7 @@ void call_for_command(char command[],char input[])
 	char clear[]="clear";
 	char pinfo[]="pinfo";
 	char remindme_string[]="remindme";
+	char clock_string[]="clock";
 
 	//if first word is cd
 	if(strcmp(cd,token)==0)
@@ -260,6 +260,12 @@ void call_for_command(char command[],char input[])
 		
 	}
 
+	//if the first word is clock
+	else if(strcmp(clock_string,token)==0)
+	{
+		clock_main(input);
+	}
+
 	//to call inbuilt functions
 	else
 	{
@@ -287,6 +293,7 @@ int single_command(char input[])
 		//return 1 if command is exit
 		if(strcmp(exit_string,token)==0)
 		{
+			is_exit_clock=1;
 			exit(0);
 			return 1;
 		}
@@ -332,12 +339,13 @@ int main()
 		if(strlen(copy_input))
 		{
 			char* token = strtok_r(copy_input,";",&saveptr);
-			
+		
 			//separating commands by ';' and calling single_command function on each of them
 			while(token!=NULL && program_on)
 			{
 				if(single_command(token))
 				{
+					is_exit_clock=1;
 					program_on=0;
 				}
 				else
@@ -348,6 +356,7 @@ int main()
 		}
 		if(!program_on)
 		{
+			is_exit_clock=1;
 			exit(0);
 		}
 	}
