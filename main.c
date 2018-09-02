@@ -2,6 +2,12 @@
 #include<string.h>
 #include<unistd.h>
 #include "ls.c"
+#include<stdlib.h>
+#include "system_commands.c"
+#include "remindme.c"
+#include "pinfo.c"
+
+
 
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
@@ -95,7 +101,11 @@ void take_input(char input[])
 	find_rwd();
 	char user[100];
 	char host[100];
+	
+	//getting current user's name
 	getlogin_r(user,100);
+	
+	//getting the host name
 	gethostname(host,100);
 	printf(GREEN "%s@%s:"RESET BLUE "%s " RESET ,user,host,rwd);
 	fgets (input, 100, stdin);
@@ -151,7 +161,40 @@ void change_dir(char input[])
 	return;
 }
 	
-
+void call_inbuilt_functions(char* token, char* saveptr)
+{
+	char *arg[100];
+	int i=0;
+	while(token!=NULL)
+	{
+		arg[i]=token;
+		token = strtok_r(NULL," ",&saveptr);
+		i++;
+		
+	}
+	arg[i]=NULL;
+	int n=strlen(arg[i-1]);
+	if(arg[i-1][n-1]=='&')
+	{
+		printf("background\n");
+		if(n==1)
+		{
+			arg[i-1]=NULL;
+			call_inbuilt_background(arg);
+		}
+		else
+		{
+			arg[i-1][n-1]='\0';
+			call_inbuilt_background(arg);	
+		}
+		
+	}
+	else
+	{
+		call_inbuilt(arg);	
+	}
+		
+}
 //function to call another file for a command
 void call_for_command(char command[],char input[])
 {
@@ -163,6 +206,9 @@ void call_for_command(char command[],char input[])
 	char pwd[]="pwd";
 	char ls[]="ls";
 	char echo[]="echo";
+	char clear[]="clear";
+	char pinfo[]="pinfo";
+	char remindme_string[]="remindme";
 
 	//if first word is cd
 	if(strcmp(cd,token)==0)
@@ -172,21 +218,50 @@ void call_for_command(char command[],char input[])
 	}
 
 	//if first word is pwd
-	if(strcmp(pwd,token)==0)
+	else if(strcmp(pwd,token)==0)
 	{
 		printf("%s\n",cwd);
 	}
 
 	//if first word is ls
-	if(strcmp(ls,token)==0)
+	else if(strcmp(ls,token)==0)
 	{
-		ls_main(input);		
+		if(ls_main(input)!=0)
+		{
+			call_inbuilt_functions(token,saveptr);		
+		}		
 	}
 
 	//if the first word is echo
-	if(strcmp(echo,token)==0)
+	else if(strcmp(echo,token)==0)
 	{
 		echo_command(input);
+	}
+
+	//if the first word is clear
+	else if(strcmp(clear,token)==0)
+	{
+		system("clear");
+	}
+
+	//if the first word is pinfo
+	else if(strcmp(pinfo,token)==0)
+	{
+		pinfo_main(input,home);
+		
+	}
+
+	//if the first word is remindme
+	else if(strcmp(remindme_string,token)==0)
+	{
+		remindme_main(input);
+		
+	}
+
+	//to call inbuilt functions
+	else
+	{
+		call_inbuilt_functions(token,saveptr);	
 	}
 	return;
 }
