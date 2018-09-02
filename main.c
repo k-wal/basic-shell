@@ -161,6 +161,7 @@ void change_dir(char input[])
 	return;
 }
 	
+//function to check for background functions and call inbuilt functions
 void call_inbuilt_functions(char* token, char* saveptr)
 {
 	char *arg[100];
@@ -176,7 +177,7 @@ void call_inbuilt_functions(char* token, char* saveptr)
 	int n=strlen(arg[i-1]);
 	if(arg[i-1][n-1]=='&')
 	{
-		printf("background\n");
+		//printf("background\n");
 		if(n==1)
 		{
 			arg[i-1]=NULL;
@@ -195,6 +196,7 @@ void call_inbuilt_functions(char* token, char* saveptr)
 	}
 		
 }
+
 //function to call another file for a command
 void call_for_command(char command[],char input[])
 {
@@ -272,7 +274,7 @@ void call_for_command(char command[],char input[])
 int single_command(char input[])
 {
 	char copy_input[1000];
-	char exit[]="exit";
+	char exit_string[]="exit";
 	char copy_input2[1000];
 	char* saveptr;
 	strcpy(copy_input,input);
@@ -283,8 +285,9 @@ int single_command(char input[])
 		char* token = strtok_r(copy_input," ",&saveptr);
 		
 		//return 1 if command is exit
-		if(strcmp(exit,token)==0)
+		if(strcmp(exit_string,token)==0)
 		{
+			exit(0);
 			return 1;
 		}
 		else
@@ -300,6 +303,14 @@ int single_command(char input[])
 
 int main()
 {
+
+	//initializing backid[] to -1
+	int i;
+	for(i=0; i<100; i++)
+	{
+		backid[i]=-1;
+	}
+
 	getcwd(home,sizeof(home));
 	getcwd(rwd,sizeof(rwd));
 	getcwd(cwd,sizeof(cwd));
@@ -308,12 +319,12 @@ int main()
 	//copy_input so that input is preserved 
 	char copy_input[1000];
 	char copy_token[1000];
-	char exit[]="exit";
 	int program_on = 1;
 	
 	//keep taking input till exit comes
 	while(program_on)
 	{
+		check_background_over();
 		take_input(input);
 		strcpy(copy_input,input);
 		char* saveptr;
@@ -335,8 +346,10 @@ int main()
 				}
 			}
 		}
-		
-			
+		if(!program_on)
+		{
+			exit(0);
+		}
 	}
 	return 0;
 }

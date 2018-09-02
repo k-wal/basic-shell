@@ -69,7 +69,7 @@ void find_relative_path(char cwd[],char home[],char rwd[])
 	
 }
 
-
+//main pinfo function
 void pinfo_main(char input[],char home[])
 {
 	char input_id[100];
@@ -97,7 +97,7 @@ void pinfo_main(char input[],char home[])
 	FILE* statfile;
 	if(!(statfile = fopen(stat,"r")))
 	{
-		printf("Error finding info on process\n.");
+		printf("Error finding info on process\n");
 		return;
 	}
 	long long int pid;
@@ -134,10 +134,11 @@ void pinfo_main(char input[],char home[])
 	ssize_t path_len = readlink(stat, path, sizeof(path));
     if(path_len < 0) 
     {
-        printf("Error reading symbolic link %s.\n", stat);
+        printf("Error reading symbolic link %s\n", stat);
         return;
     }
 
+    //converting executable path to relative path to home
     char rwd[100];
     find_relative_path(path,home,rwd);
     printf("%s\n",rwd);

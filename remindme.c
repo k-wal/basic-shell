@@ -4,6 +4,22 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 
+/*
+void remindme_print(long long int time, char message[])
+{
+	
+	pid_t child_id;
+	child_id = fork();
+	if(child_id==0)
+	{
+		sleep(time);
+		printf("Reminder : %s\n",message);
+
+	}*/
+	
+
+
+
 //main function for remindme command
 void remindme_main(char input[])
 {
@@ -49,10 +65,21 @@ void remindme_main(char input[])
 	while(token!=NULL)
 	{
 		strcat(message,token);
+		strcat(message," ");
 		token=strtok_r(NULL," ",&saveptr);
 	}
 
 	//printing message
-	printf("message is %lld : %s\n",time,message);
+	//remindme_print(time,message);
+	
+	int child_id=fork();
+	if(child_id==0)
+	{
+		sleep(time);
+		printf("Reminder : %s\n",message);
+		_exit(0);
+
+	}
+	return;
 
 }
