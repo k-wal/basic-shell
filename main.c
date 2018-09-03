@@ -1,13 +1,13 @@
 #include<stdio.h>
 #include<string.h>
 #include<unistd.h>
-#include "ls.c"
 #include<stdlib.h>
+#include "ls.c"
 #include "system_commands.c"
 #include "remindme.c"
 #include "pinfo.c"
 #include "clock.c"
-
+#include "cd.c"
 
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
@@ -118,48 +118,8 @@ void take_input(char input[])
 	return;
 }
 
-//function to echo
-void echo_command(char input[])
-{
-	char* saveptr;
-	char copy_input[1000];
-	strcpy(copy_input,input);
-	char* token = strtok_r(copy_input," ",&saveptr);
-	token = strtok_r(NULL," ",&saveptr);
-	printf("%s\n",token);
-	return;
-}
 
 
-//function to change directory (path checks are done too)
-void change_dir(char input[])
-{
-	char* saveptr;
-	char* token = strtok_r(input," ",&saveptr);
-	token = strtok_r(NULL," ",&saveptr);
-	
-	//if no arguments are given, go to home directory
-	if(token==NULL)
-	{
-		chdir(home);
-		getcwd(cwd,sizeof(cwd));
-		return;
-	}
-
-	//if error in changing directories
-	if(chdir(token)!=0)
-	{
-		perror("Error");
-	}
-
-	//change current working directory to the argument
-	else
-	{
-		getcwd(cwd,sizeof(cwd));
-	}
-	return;
-}
-	
 //function to check for background functions and call inbuilt functions
 void call_inbuilt_functions(char* token, char* saveptr)
 {
@@ -216,7 +176,7 @@ void call_for_command(char command[],char input[])
 	if(strcmp(cd,token)==0)
 	{
 		//token=strtok(NULL," ")
-		change_dir(input);
+		change_dir(input,cwd,home);
 	}
 
 	//if first word is pwd

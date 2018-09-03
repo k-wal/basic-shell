@@ -21,6 +21,12 @@ void clock_main(char input[])
 		return;
 	}
 	token = strtok_r(NULL," ",&saveptr);
+	if(token==NULL)
+	{
+		printf("Error : time argument missing\n");
+		return;
+	}
+
 	long long int time=0,i;
 	long long int n=strlen(token);
 	for(i=0; i<n; i++)

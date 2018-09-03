@@ -15,6 +15,7 @@ void call_inbuilt(char* arg[])
 	{
 		execvp(arg[0],arg);
 		perror("Error:");
+		_exit(0);
 
 	}
 	else
@@ -36,6 +37,7 @@ void call_inbuilt_background(char* arg[])
 	{
 		execvp(arg[0],arg);
 		perror("Error:");
+		_exit(0);
 
 	}
 	int i;

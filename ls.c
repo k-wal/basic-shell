@@ -54,6 +54,7 @@ int ls_with_l(int is_a,char path[])
     			printf( (f.st_mode & S_IXOTH) ? "x" : "-");
     			printf("\t");
     			
+    		
     			//printing file size
     			printf("%ld\t",f.st_size);
   				
