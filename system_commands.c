@@ -3,17 +3,133 @@
 #include<unistd.h>
 #include<sys/types.h>
 #include<sys/wait.h>
+#include<stdlib.h>
+#include<fcntl.h> 
 
 long long int backid[100];
 
 //function to call inbuilt functions foreground
-void call_inbuilt(char* arg[])
-{	
+//infile and outfile to implement redirection
+//function is of the form arg < infile > outfile
+void call_inbuilt(char* arg[], char infile[], char outfile[],int if_append)
+{
 	pid_t child_id;
 	child_id = fork();
+	int if_infile=0,if_outfile=0;
+	int save_stdin,save_stdout,infile_desc,outfile_desc;
 	if(child_id==0)
 	{
+
+		//To compute infile and change input file from stdin to infile
+		if(infile)
+		{
+			//to make sure infile isn't just whitespaces
+			char* saveptr;
+			char* token = strtok_r(infile," ",&saveptr);
+			if(token)
+			{
+				if_infile=1;
+			}
+		}
+
+		//if there's an infile/ input redirection
+		if(if_infile)
+		{
+			//to remove leading whitespaces
+			char in2[100];
+			int i=0;
+			while(infile[i]==' ')
+			{
+				i++;
+			}
+			int j;
+			for( j=i;j<strlen(infile);j++)
+			{
+				in2[j-i] = infile[j];
+			}
+			in2[j-i]='\0';
+
+			//saving standard input
+			save_stdin = dup(STDIN_FILENO);
+			infile_desc = open(in2,O_RDONLY);
+			if(infile_desc<0)
+			{	
+				printf("Error opening the file.\n");
+				_exit(0);
+			}
+			
+			//replacing stdin with given file
+			dup2(infile_desc,STDIN_FILENO);
+		}	
+
+		//To compute outfile and change output file from stdout to outfile
+		if(outfile)
+		{
+			//to make sure infile isn't just whitespaces
+			char* saveptr;
+			char* token = strtok_r(outfile," ",&saveptr);
+			if(token)
+			{
+				if_outfile=1;
+			}
+		}
+
+		//if there's an infile/ input redirection
+		if(if_outfile)
+		{
+			//to remove leading whitespaces
+			char out2[100];
+			int i=0;
+			while(outfile[i]==' ')
+			{
+				i++;
+			}
+			int j;
+			for( j=i;j<strlen(outfile);j++)
+			{
+				out2[j-i] = outfile[j];
+			}
+			out2[j-i]='\0';
+
+			//saving standard input
+			save_stdout = dup(STDOUT_FILENO);
+			if(if_append)
+			{
+				outfile_desc = open(out2,O_WRONLY|O_APPEND|O_CREAT, 0777);
+			}
+			else
+			{
+				outfile_desc = open(out2,O_WRONLY|O_CREAT, 0777);
+			}
+			if(outfile_desc<0)
+			{	
+				printf("Error opening the file.\n");
+				_exit(0);
+			}
+			
+			//replacing stdin with given file
+			dup2(outfile_desc,STDOUT_FILENO);
+		}	
+
+
+		//executing the command
 		execvp(arg[0],arg);
+			
+		//getting stdin back
+		if(if_infile)
+		{
+			dup2(save_stdin,STDIN_FILENO);
+			close(infile_desc);
+		}
+
+		//getting stdout back
+		if(if_outfile)
+		{
+			dup2(save_stdout,STDOUT_FILENO);
+			close(outfile_desc);
+		}
+
+
 		perror("Error:");
 		_exit(0);
 
@@ -29,7 +145,9 @@ void call_inbuilt(char* arg[])
 }
 
 //function to call functions background
-void call_inbuilt_background(char* arg[])
+//infile and outfile to implement redirection
+//function is of the form arg < infile > outfile
+void call_inbuilt_background(char* arg[], char infile[], char outfile[],int if_append)
 {
 	pid_t child_id;
 	child_id = fork();

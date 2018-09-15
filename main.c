@@ -121,17 +121,56 @@ void take_input(char input[])
 
 
 //function to check for background functions and call inbuilt functions
-void call_inbuilt_functions(char* token, char* saveptr)
+//infile and outfile are fpr redirection
+void call_inbuilt_functions(char* token, char* saveptr, char infile[], char outfile[],int if_append)
 {
 	char *arg[100];
 	int i=0;
-	while(token!=NULL)
+	int redirect_flag=0;
+
+	//arg[] is the array of arguments taken by exec function 
+	while(token!=NULL && redirect_flag==0)
 	{
 		arg[i]=token;
 		token = strtok_r(NULL," ",&saveptr);
 		i++;
+		if(!token)
+		{
+			continue;
+		}
+		if(token[0]=='<' || token[0]=='>')
+		{
+			redirect_flag=1;
+		}
+		else if(token[strlen(token)-1]=='<' || token[strlen(token)-1]=='>')
+		{
+			redirect_flag=-1;
+		}
 		
 	}
+
+	//if redirect sign is in the beginning
+	//do nothing
+
+	//if redirect sign is in the end
+	if(redirect_flag==-1)
+	{
+
+		if(token[0]=='>' && if_append)
+		{
+			int i;
+			char c_token[100];
+			strcpy(c_token,token);
+			for(i=1; i<strlen(c_token); i++)
+			{
+				token[i-1]=c_token[i];
+			}
+		}
+		arg[i]=token;
+		arg[i][strlen(token)-1]='\0';
+		i++;
+	}
+
 	arg[i]=NULL;
 	int n=strlen(arg[i-1]);
 	if(arg[i-1][n-1]=='&')
@@ -140,21 +179,60 @@ void call_inbuilt_functions(char* token, char* saveptr)
 		if(n==1)
 		{
 			arg[i-1]=NULL;
-			call_inbuilt_background(arg);
+			call_inbuilt_background(arg,infile,outfile,if_append);
 		}
 		else
 		{
 			arg[i-1][n-1]='\0';
-			call_inbuilt_background(arg);	
+			call_inbuilt_background(arg,infile,outfile,if_append);	
 		}
 		
 	}
 	else
 	{
-		call_inbuilt(arg);	
+		call_inbuilt(arg,infile,outfile,if_append);	
 	}
 		
 }
+
+int find_redirection_files(char infile[], char outfile[], char input[])
+{
+	int in_index=0,out_index=0,out_flag=0,in_flag=0,if_append=0;
+	char cur_input[1000];
+	strcpy(cur_input,input);
+	int size=strlen(cur_input);
+	int i;
+	for(i=0; i<size; i++)
+	{
+		if(cur_input[i]=='<')
+		{
+			in_flag=1;
+		}
+		if(cur_input[i]=='>')
+		{
+			in_flag=0;
+			out_flag=1;
+			if(cur_input[i+1]=='>')
+			{
+				if_append=1;
+			}
+		}
+		if(in_flag==1 && cur_input[i]!='<')
+		{
+			infile[in_index]=cur_input[i];
+			in_index++;
+		}
+		if(out_flag==1 && cur_input[i]!='>')
+		{
+			outfile[out_index]=cur_input[i];
+			out_index++;
+		}
+	}
+	outfile[out_index]='\0';
+	infile[in_index]='\0';
+	return if_append;
+}
+
 
 //function to call another file for a command
 void call_for_command(char command[],char input[])
@@ -190,7 +268,11 @@ void call_for_command(char command[],char input[])
 	{
 		if(ls_main(input)!=0)
 		{
-			call_inbuilt_functions(token,saveptr);		
+			char infile[100];
+			char outfile[100];
+			//if_append = 1 if there's appending
+			int if_append=find_redirection_files(infile,outfile,input);
+			call_inbuilt_functions(token,saveptr,infile,outfile,if_append);		
 		}		
 	}
 
@@ -229,10 +311,15 @@ void call_for_command(char command[],char input[])
 	//to call inbuilt functions
 	else
 	{
-		call_inbuilt_functions(token,saveptr);	
+		char infile[100];
+		char outfile[100];
+		int if_append = find_redirection_files(infile,outfile,input);
+		call_inbuilt_functions(token,saveptr,infile,outfile,if_append);	
+		
 	}
 	return;
 }
+
 
 
 //to execute single command(one part of the ; separated commands)
