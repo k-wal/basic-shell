@@ -8,6 +8,7 @@
 #include "pinfo.c"
 #include "clock.c"
 #include "cd.c"
+#include "setenv.c"
 
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
@@ -249,6 +250,9 @@ void call_for_command(char command[],char input[])
 	char pinfo[]="pinfo";
 	char remindme_string[]="remindme";
 	char clock_string[]="clock";
+	char setenv_string[]="setenv";
+	char unsetenv_string[]="unsetenv";
+
 
 	//if first word is cd
 	if(strcmp(cd,token)==0)
@@ -308,6 +312,18 @@ void call_for_command(char command[],char input[])
 		clock_main(input);
 	}
 
+	//if the first word is setenv
+	else if(strcmp(setenv_string,token)==0)
+	{
+		setenv_main(input);
+	}
+
+	//if the first word is unsetenv
+	else if(strcmp(unsetenv_string,token)==0)
+	{
+		unsetenv_main(input);
+	}
+
 	//to call inbuilt functions
 	else
 	{
@@ -321,17 +337,14 @@ void call_for_command(char command[],char input[])
 }
 
 
-
-//to execute single command(one part of the ; separated commands)
+//to execute single command(one part of the | separated commands)
 //returns 1 if exit is found
 int single_command(char input[])
 {
 	char copy_input[1000];
 	char exit_string[]="exit";
-	char copy_input2[1000];
 	char* saveptr;
 	strcpy(copy_input,input);
-	strcpy(copy_input2,input);
 	if(strlen(copy_input))
 	{
 		//printf("%s\n",input);
@@ -352,6 +365,51 @@ int single_command(char input[])
 	}
 	
 	return 0;	
+}
+
+//function that takes input between ; and passes to single_command function after input and output stuff
+//returns 1 if exiting
+int pipe_main(char input[])
+{
+	char copy_input[1000];
+	strcpy(copy_input,input);
+	char* saveptr;
+	char* token = strtok_r(copy_input,"|",&saveptr);
+	int in_desc,out_desc;
+	//saving standard input
+	int	save_stdin = dup(STDIN_FILENO);
+	
+	//saving standard output
+	int save_stdout = dup(STDOUT_FILENO);
+	int desc[2];
+
+	//desc[1] = dup(STDOUT_FILENO);
+	desc[0] = dup(STDIN_FILENO);
+
+	//what you write in desc[1] can be read in desc[0]
+	//pipe(desc);
+	
+	//in_desc = dup(STDIN_FILENO);
+	
+	dup2(desc[1],STDOUT_FILENO);
+	dup2(desc[0],STDIN_FILENO);
+		
+
+	while(token)
+	{
+		if(single_command(token))
+		{
+			return 1;
+		}
+		else
+		{
+			token = strtok_r(NULL, "|", &saveptr);
+		}
+	}
+	dup2(save_stdin,STDIN_FILENO);
+	dup2(save_stdout,STDIN_FILENO);
+	
+	return 0;
 }
 
 
@@ -391,6 +449,7 @@ int main()
 			while(token!=NULL && program_on)
 			{
 				if(single_command(token))
+				//if(pipe_main(token))
 				{
 					is_exit_clock=1;
 					program_on=0;

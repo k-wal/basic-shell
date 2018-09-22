@@ -79,11 +79,14 @@ void pinfo_main(char input[],char home[])
 	char* saveptr;
 	char* token = strtok_r(input," ",&saveptr);
 	token = strtok_r(NULL," ",&saveptr);
+
+	//if pid is given
 	if(token!=NULL)
 	{
 		//strcpy(input_id,token);
 		strcat(proc,token);
 	}
+	//if no pid is given
 	else
 	{		
 		//strcpy(input_id,str(getpid()));

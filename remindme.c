@@ -62,6 +62,10 @@ void remindme_main(char input[])
 
 	//creating message
 	token=strtok_r(NULL," ",&saveptr);
+	if(token==NULL)
+	{
+		strcat(message," ");
+	}
 	while(token!=NULL)
 	{
 		strcat(message,token);

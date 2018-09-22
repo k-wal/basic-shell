@@ -85,6 +85,7 @@ void set_stdin_back(int infile_desc, int save_stdin)
 	return;
 }
 
+//to set output mode back to standard output
 void set_stdout_back(int outfile_desc, int save_stdout)
 {
 	dup2(save_stdout,STDOUT_FILENO);
@@ -299,7 +300,8 @@ void check_background_over(void)
 		if(status!='R')
 		{
 			backid[i]=-1;
-			printf("%s with pid %lld exited normally\n",name,pid);
+			fprintf(stderr,"%s with pid %lld exited normally\n",name,pid);
+			//printf("%s with pid %lld exited normally\n",name,pid);
 		}
 
 	}
