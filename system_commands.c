@@ -7,7 +7,7 @@
 #include<fcntl.h> 
 
 long long int backid[100];
-
+long long int is_running[100];
 
 //sets input descriptor to infile[] and returns infile_desc
 int set_input_desc(char infile[], int infile_desc, int save_stdin)
@@ -259,6 +259,7 @@ void call_inbuilt_background(char* arg[], char infile[], char outfile[],int if_a
 		if(backid[i]==-1)
 		{
 			backid[i]=child_id;
+			is_running[i]=child_id;
 			//printf("i : %d\n",i);
 			break;
 		}
@@ -273,7 +274,7 @@ void check_background_over(void)
 	int i;
 	for(i=0; i<100; i++)
 	{
-		if(backid[i]==-1)
+		if(is_running[i]==0||is_running[i]==-1)
 			continue;
 
 		char proc[100];
@@ -299,7 +300,7 @@ void check_background_over(void)
 
 		if(status!='R')
 		{
-			backid[i]=-1;
+			is_running[i]=0;
 			fprintf(stderr,"%s with pid %lld exited normally\n",name,pid);
 			//printf("%s with pid %lld exited normally\n",name,pid);
 		}
